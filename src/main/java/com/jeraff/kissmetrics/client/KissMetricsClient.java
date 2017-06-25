@@ -1,8 +1,9 @@
 package com.jeraff.kissmetrics.client;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.FluentCaseInsensitiveStringsMap;
-import com.ning.http.client.Response;
+
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.util.Collection;
 import java.util.List;
@@ -12,10 +13,9 @@ import java.util.concurrent.Future;
 public class KissMetricsClient {
     private String apiKey;
     private String id;
-    private AsyncHttpClient httpClient;
+    private HttpClient httpClient;
     private boolean secure;
     private boolean useClientTimestamp;
-    private Future<Response> lastResponse;
 
     public static final String API_HOST = "trk.kissmetrics.com";
 
@@ -40,14 +40,14 @@ public class KissMetricsClient {
     }
 
     public KissMetricsClient(
-            String apiKey, String id, AsyncHttpClient httpClient, boolean secure) {
+            String apiKey, String id, HttpClient httpClient, boolean secure) {
         this.apiKey = apiKey;
         this.id = id;
         this.httpClient = httpClient;
         this.secure = secure;
     }
 
-    public KissMetricsClient(String apiKey, String id, AsyncHttpClient httpClient) {
+    public KissMetricsClient(String apiKey, String id, HttpClient httpClient) {
         this.apiKey = apiKey;
         this.id = id;
         this.httpClient = httpClient;
@@ -83,6 +83,7 @@ public class KissMetricsClient {
     //////////////////////////////////////////////////////////////////////
     // get the response...
     //////////////////////////////////////////////////////////////////////
+    /*
     public KissMetricsResponse getResponse() throws KissMetricsException {
         final KissMetricsResponse kissMetricsResponse = new KissMetricsResponse();
         final Response response;
@@ -101,6 +102,7 @@ public class KissMetricsClient {
 
         return kissMetricsResponse;
     }
+    */
 
     //////////////////////////////////////////////////////////////////////
     // helpers
@@ -121,11 +123,12 @@ public class KissMetricsClient {
 
         final String url = constructUrl(endpoint, properties);
         if (httpClient == null) {
-            httpClient = new AsyncHttpClient();
+            httpClient = new DefaultHttpClient();
         }
 
         try {
-            lastResponse = httpClient.prepareGet(url).execute();
+            HttpGet request = new HttpGet(url);
+            httpClient.execute(request);
         } catch (Exception e) {
             throw new KissMetricsException("error: " + url, e);
         }
@@ -186,11 +189,11 @@ public class KissMetricsClient {
         this.useClientTimestamp = useClientTimestamp;
     }
 
-    public AsyncHttpClient getHttpClient() {
+    public HttpClient getHttpClient() {
         return httpClient;
     }
 
-    public void setHttpClient(AsyncHttpClient httpClient) {
+    public void setHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
     }
 }
